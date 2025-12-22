@@ -1,0 +1,602 @@
+<!DOCTYPE html> <html lang="zh-Hant"> <head> <meta charset="UTF-8" /> <meta name="viewport" content="width=device-width, initial-scale=1.0" /> <title>CMoney 員工推薦獎金計畫</title> <style>
+/* ===== Dark mode simulator (manual toggle) =====
+   Goal: Red-tinted dark mode (not "poison black"), with cards staying lightly red.
+   ================================================= */
+:root{
+  /* red-tinted dark palette */
+  --dm-bg-1:#2a0f14;     /* deep warm red */
+  --dm-bg-2:#140d10;     /* near-black, but warm */
+  --dm-surface:#2b1419;  /* card/hero surface */
+  --dm-surface-2:#251116;
+  --dm-card-tint: rgba(226,30,40,.12); /* light red wash on cards */
+  --dm-text:#f3f4f6;
+  --dm-muted:#d4b7bb;
+  --dm-track:#3b2026;
+  --dm-shadow: 0 18px 45px rgba(0,0,0,.28);
+}
+
+/* overall background: warm red gradient */
+body.theme-dark{
+  background:
+    radial-gradient(circle at top left, rgba(226,30,40,.22) 0, rgba(226,30,40,.10) 18%, transparent 55%),
+    radial-gradient(circle at 80% 10%, rgba(255,128,136,.16) 0, transparent 45%),
+    linear-gradient(180deg, var(--dm-bg-1) 0, var(--dm-bg-2) 75%);
+  color:var(--dm-text);
+}
+
+/* hero / cards / chart: keep "light red" surfaces */
+body.theme-dark .hero,
+body.theme-dark .card,
+body.theme-dark .bar-chart,
+body.theme-dark .small-print{
+  background:
+    radial-gradient(circle at top left, var(--dm-card-tint), transparent 60%),
+    linear-gradient(135deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+  box-shadow: var(--dm-shadow);
+  border: 1px solid rgba(255,255,255,.06);
+}
+
+body.theme-dark .section-title{color:var(--dm-text);} 
+body.theme-dark .section-intro,
+body.theme-dark .hero-subtitle,
+body.theme-dark .card ul{color:var(--dm-muted);} 
+
+/* Dark mode: Other Notes card was too close to background → boost contrast */
+body.theme-dark .small-print{
+  color: var(--dm-muted);
+  background:
+    radial-gradient(circle at top left, rgba(226,30,40,.16), transparent 60%),
+    linear-gradient(135deg, rgba(255,255,255,.08), rgba(255,255,255,.04));
+  border: 1px solid rgba(255,255,255,.10);
+  box-shadow: var(--dm-shadow);
+}
+body.theme-dark .small-print li{ color: var(--dm-muted); }
+/* 夜間模式：職等文字（圖表 label）改白色 */
+body.theme-dark .bonus-chart-desktop .bar-level,
+body.theme-dark .bonus-chart-mobile .bar-row-label{
+  color: var(--dm-text);
+}
+
+/* 夜間模式：膠囊底軌道提高對比 */
+body.theme-dark .bar-track-vertical,
+body.theme-dark .bar-row-track{
+  background: rgba(255,255,255,.14);
+}
+
+body.theme-dark a{color:#ff9aa2;}
+
+/* Hero text tweaks for dark theme */
+body.theme-dark .hero-title span.oney{
+  color: var(--dm-text) !important; /* oney 改白色 */
+}
+
+body.theme-dark .hero-badge{
+  /* 保留玻璃透感，讓夜間模式仍然柔和 */
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.18), rgba(255,255,255,.08));
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  box-shadow:
+    0 8px 20px rgba(0,0,0,.22),
+    inset 0 0 0 1px rgba(255,255,255,.18);
+}
+body.theme-dark .hero-badge span{
+  color: var(--dm-text); /* Internal Referral Bonus 文字改白色 */
+}
+ 
+
+/* Toggle button */
+.theme-toggle{
+  position:fixed; top:14px; right:14px; z-index:9999;
+  border:0; cursor:pointer; padding:10px 12px; border-radius:999px;
+  font-size:12px; font-weight:700; letter-spacing:.02em;
+  background:rgba(0,0,0,.08); color:#111827;
+  box-shadow:0 10px 26px rgba(15,23,42,.12);
+}
+body.theme-dark .theme-toggle{
+  background:rgba(255,255,255,.10);
+  color:var(--dm-text);
+  box-shadow:0 12px 28px rgba(0,0,0,.28);
+}
+@media (prefers-color-scheme: dark){body{color-scheme:dark;} }
+/* ============================================ */
+
+/* 強制手機版預覽模式 */ html, body { margin: 0 auto; overflow-x: hidden; } :root {
+  --cm-red: #e21e28;
+  --cm-black: #191919;
+  --bg-light: #f5f5f7;
+  --card-bg: #ffffff;
+  --border-subtle: #e2e2e8;
+  --metal-white: #fdfdfd;
+  --text-muted: #555666;
+  --accent-soft: #ffe5e7;
+
+  /* Referral bonus – mobile bar visual scale */
+  --lv2: 55%;  /* 10,000 */
+  --lv3: 66%;  /* 35,000 */
+  --lv4: 77%;  /* 60,000 */
+  --lv5: 88%;  /* 100,000 */
+  --lv6: 100%; /* 150,000 */
+} * { box-sizing: border-box; } body { margin: 0; font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: radial-gradient(circle at top left, #fff8f8 0, #ffffff 45%, #f3f4f7 100%); color: var(--cm-black); line-height: 1.6; } .page { max-width: 1120px; margin: 0 auto; padding: 56px 24px 96px; } @media (min-width: 768px) { .page { padding: 56px 24px 96px; } } h1, h2, h3 { margin: 0 0 16px; line-height: 1.3; } p { margin: 0 0 12px; font-size: 15px; line-height: 1.7; letter-spacing: 0.02em; } .hero { display: flex; flex-direction: column; gap: 24px; align-items: flex-start; justify-content: flex-start; padding: 28px 20px 32px; border-radius: 28px; background: radial-gradient(circle at top left, rgba(226, 30, 40, 0.09), transparent 55%), linear-gradient(135deg, #ffffff, #f7f7fb); box-shadow: 0 18px 45px rgba(0, 0, 0, 0.06); width: 100%; } .hero-text { width: 100%; } .hero-visual { width: 100%; display: flex; justify-content: center; align-items: center; min-width: auto; } @media (min-width: 900px) {
+  p { font-size: 16px; }
+ .hero { flex-direction: row; align-items: center; justify-content: space-between; padding: 48px 48px 56px; } .hero-text { width: 38%; } .hero-visual { width: 62%; display: flex; justify-content: flex-end; align-items: center; padding-left: 24px; /* 往右推避免壓到左邊文字 */ } .hero-img { max-width: 600px; height: auto; display: block; margin-left: auto; /* 圖片更往右貼齊 */ } } .hero-title span.cm { color: var(--cm-red); font-weight: 800; } .hero-title span.oney { color: var(--cm-black); font-weight: 800; } .hero-subtitle { font-size: 15px; color: var(--text-muted); max-width: 36em; } .hero-badge { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 999px; background: rgba(226, 30, 40, 0.06); color: var(--cm-red); font-size: 12px; font-weight: 600; margin-bottom: 16px; } .hero-visual { width: 100%; display: flex; justify-content: center; align-items: center; min-width: auto; } .people-cluster { width: 360px; height: 260px; position: relative; } .people-cluster::before { content: none; } .people-svg { position: relative; z-index: 1; width: 100%; height: 100%; } section { margin-top: 40px; } .section-title { position: relative; font-size: 22px; margin-bottom: 6px; padding-left: 12px; color: #111827; }
+.section-title::before { content:""; position:absolute; top:4px; bottom:4px; left:0; width:4px; border-radius:999px; background: var(--cm-red); } .section-intro { font-size: 14px; color: var(--text-muted); margin-bottom: 20px; max-width: 40em; } .card-grid { display: grid; grid-template-columns: repeat(1, minmax(0, 1fr)); gap: 16px; } @media (min-width: 640px) { .card-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (min-width: 1024px) { .card-grid { grid-template-columns: repeat(3, 1fr); } } .card { background: radial-gradient(circle at top left, rgba(226, 30, 40, 0.06), transparent 55%), linear-gradient(135deg, #ffffff, #f7f7fb); border-radius: 20px; padding: 20px 20px 22px; border: none; box-shadow: 0 10px 26px rgba(15, 23, 42, 0.08); }
+
+/* Eligibility – icon card (mobile & desktop: horizontal) */
+.card.card-referral .card-top,
+.card.card-reference .card-top,
+.card.card-receive .card-top {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.card.card-referral .card-content,
+.card.card-reference .card-content,
+.card.card-receive .card-content {
+  flex: 1;
+  min-width: 0; /* 防止文字把右側擠爆 */
+}
+
+.card.card-referral .card-icon,
+.card.card-reference .card-icon,
+.card.card-receive .card-icon {
+  width: 96px;
+  height: 96px;
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.card.card-referral .card-icon img,
+.card.card-reference .card-icon img,
+.card.card-receive .card-icon img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: contain;
+}
+
+@media (min-width: 768px) {
+  .card.card-referral .card-top,
+  .card.card-reference .card-top,
+  .card.card-receive .card-top {
+    gap: 18px;
+  }
+  .card.card-referral .card-icon,
+  .card.card-reference .card-icon,
+  .card.card-receive .card-icon {
+    width: 120px;
+    height: 120px;
+  }
+}
+
+.card h3 { font-size: 15px; margin-bottom: 10px; } .card ul { margin: 0; padding-left: 18px; font-size: 13px; color: var(--text-muted); } .badge-sub { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 999px; background: rgba(0, 0, 0, 0.04); color: #666; font-size: 11px; margin-bottom: 8px; } .bar-chart {
+  background: radial-gradient(circle at top left, rgba(226, 30, 40, 0.05), transparent 55%),
+    linear-gradient(135deg, #ffffff, #f7f7fb);
+  border-radius: 20px;
+  padding: 18px 18px 20px;
+  border: none;
+  box-shadow: 0 10px 26px rgba(15, 23, 42, 0.06);
+}
+
+/* Desktop: 垂直長條圖 */
+/* Desktop: 垂直長條圖（無左側刻度；職等/金額上下排列） */
+.bonus-chart-desktop { display: none; }
+
+@media (min-width: 768px) {
+  .bonus-chart-desktop {
+    display: block;
+    padding: 22px 22px 12px;
+  }
+}
+
+.bonus-bars {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.bonus-chart-desktop .bar-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.bonus-chart-desktop .bar-meta {
+  text-align: center;
+  line-height: 1.25;
+}
+
+.bonus-chart-desktop .bar-level {
+  font-size: 13px;
+  font-weight: 700;
+  color: #111827;
+}
+
+.bonus-chart-desktop .bar-amount {
+  margin-top: 6px;
+  font-variant-numeric: tabular-nums;
+  color: var(--cm-red);
+  font-weight: 700;
+  font-size: 13px;
+}
+
+.bonus-chart-desktop .bar-track-vertical {
+  position: relative;
+  width: 28px;
+  height: 140px;
+  border-radius: 999px;
+  background: #ececf2;
+  overflow: hidden;
+}
+
+.bonus-chart-desktop .bar-fill-vertical {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: inherit;
+  background: linear-gradient(180deg, #ff8088, var(--cm-red));
+  box-shadow: 0 0 10px rgba(226, 30, 40, 0.6);
+}
+
+.bonus-chart-desktop .bar-amount {
+  font-variant-numeric: tabular-nums;
+  color: var(--cm-red);
+  font-weight: 600;
+  font-size: 13px;
+  text-align: center;
+  width: 100%;
+  display: block;
+  margin-top: 4px;
+}
+
+/* Mobile: 水平長條圖 */
+.bonus-chart-mobile {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 4px 4px 0;
+}
+
+@media (min-width: 768px) {
+  .bonus-chart-mobile {
+    display: none;
+  }
+}
+
+.bonus-chart-mobile .bar-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font-size: 13px;
+}
+
+.bonus-chart-mobile .bar-row-label {
+  width: auto;
+  min-width: unset;
+  margin-right: 0;
+  font-weight: 600;
+  color: #111827;
+  flex-shrink: 0;
+}
+
+.bonus-chart-mobile .bar-row-track {
+  position: relative;
+  flex: 1;
+  height: 16px;
+  border-radius: 999px;
+  background: #ececf2;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+}
+
+.bonus-chart-mobile .bar-row-fill {
+  position: relative;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #ff8088, var(--cm-red));
+  box-shadow: 0 0 10px rgba(226, 30, 40, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 0 12px;
+  min-width: 14ch; /* ✅ 確保能容納金額文字 */
+}
+
+.bonus-chart-mobile .bar-row-amount {
+  position: relative;
+  z-index: 1;
+  padding: 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: #ffffff;
+  white-space: nowrap;
+} .process-list { list-style: none; margin: 0; padding: 0; position: relative; margin-left: 20px; } .process-item { position: relative; padding: 0 0 24px 32px; font-size: 14px; } .process-step { position: absolute; left: -12px; top: 0; width: 20px; height: 20px; border-radius: 50%; background: var(--cm-red); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; z-index: 2; } .process-text a { color: var(--cm-red); font-weight: 600; text-decoration: none; border-bottom: 1px solid rgba(226, 30, 40, 0.4); } .process-text a:hover { border-bottom-style: solid; border-bottom-width: 2px; } .small-print { font-size: 14px; color: var(--text-muted); padding: 20px 20px 22px; border-radius: 14px; background: rgba(0, 0, 0, 0.02); border: none; } .small-print ul { margin: 0; padding-left: 18px; } .divider { display: none; } .section-header { display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; margin-bottom: 18px; } .section-note { font-size: 12px; color: var(--text-muted); } .hero-img { width: 100%; max-width: 520px; height: auto; display: block; } @media (min-width: 900px) { .hero-img { max-width: 600px; /* 桌機版圖片折衷尺寸 */ } } 
+
+/* ——————————————————————
+   Bonus chart – thermometer fill animation
+   —————————————————————— */
+
+/* Mobile fill: 由空到滿（依各自寬度；最終長度由原本 width 決定） */
+.bonus-chart-mobile .bar-row-fill {
+  transform-origin: left center;
+  transform: scaleX(0);
+  transition: transform 900ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Desktop fill: 由空到滿（依各自高度；最終高度由原本 height 決定） */
+.bonus-chart-desktop .bar-fill-vertical {
+  transform-origin: center bottom;
+  transform: scaleY(0);
+  transition: transform 1000ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* 進場後開始填充 */
+.bar-chart.chart-in-view .bonus-chart-mobile .bar-row-fill { transform: scaleX(1); }
+.bar-chart.chart-in-view .bonus-chart-desktop .bar-fill-vertical { transform: scaleY(1); }
+
+/* 如果你不想圖表整塊位移，只保留淡入 */
+.bar-chart.reveal { transform: none; }
+.bar-chart.reveal.in-view { transform: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .bonus-chart-mobile .bar-row-fill,
+  .bonus-chart-desktop .bar-fill-vertical {
+    transform: none !important;
+    transition: none !important;
+  }
+}
+
+/* ——————————————————————
+   Scroll reveal (fade/slide-in)
+   —————————————————————— */
+.reveal {
+  opacity: 0;
+  transform: translateY(16px);
+  transition: opacity 700ms ease, transform 700ms ease;
+  will-change: opacity, transform;
+}
+.reveal.in-view {
+  opacity: 1;
+  transform: translateY(0);
+}
+/* 更細緻：左右進場（可選用） */
+.reveal.from-left { transform: translateX(-16px); }
+.reveal.from-right { transform: translateX(16px); }
+.reveal.from-left.in-view,
+.reveal.from-right.in-view { transform: translateX(0); }
+
+/* 使用者偏好減少動態時，直接顯示 */
+@media (prefers-reduced-motion: reduce) {
+  .reveal {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+}
+
+</style> </head> <body>
+<main class="page"> <!-- Hero Section --> <header class="hero"> <div class="hero-text"> <div class="hero-badge"> <span>Internal Referral Bonus</span> </div> <h1 class="hero-title"> <span class="cm" style="color:#E21E28;">CM</span><span class="oney">oney</span><br> 員工推薦獎金計畫 </h1> <p class="hero-subtitle"> 為鼓勵全體員工推薦優秀人員至公司服務，協助公司網羅優秀人才，特訂定本辦法。 </p> </div> <div class="hero-visual" aria-hidden="true"> <img src="https://raw.githubusercontent.com/KY888KAI/Cmoney_vibeCoding_test/main/referral_bonus_top_02.png" alt="referral bonus" class="hero-img" /> </div> </header> <!-- Section 1: Eligibility --> <!-- Section 1: Eligibility --> <section aria-labelledby="eligibility-title"> <h2 id="eligibility-title" class="section-title">適用對象與領取資格</h2> <p class="section-intro">說明被推薦人、介紹人及實際領取獎金之條件。</p> <div class="card-grid"> <article class="card card-referral">
+        <div class="card-top">
+          <div class="card-content">
+            <h3>被推薦人</h3> <ul>
+              <li>未曾任職於 CMoney。</li>
+              <li>推薦前未參與過公司招募流程。</li>
+            </ul>
+          </div>
+          <div class="card-icon" aria-hidden="true">
+            <img src="https://raw.githubusercontent.com/KY888KAI/Cmoney_vibeCoding_test/main/Referral.png" alt="" loading="lazy" />
+          </div>
+        </div>
+      </article> <article class="card card-reference">
+        <div class="card-top">
+          <div class="card-content">
+            <h3>介紹人</h3>
+            <ul>
+              <li>需為本公司在職之正職員工（包含實習生）。</li>
+              <li>不可為招募獵才組或該職缺直屬主管（含 Group Leader）。</li>
+            </ul>
+          </div>
+          <div class="card-icon" aria-hidden="true">
+            <img src="https://raw.githubusercontent.com/KY888KAI/Cmoney_vibeCoding_test/main/Reference_02.png" alt="" loading="lazy" />
+          </div>
+        </div>
+      </article> <article class="card card-receive">
+        <div class="card-top">
+          <div class="card-content">
+            <h3>領取資格</h3>
+            <ul>
+              <li>被推薦人「通過試用期」後次月，由公司撥款至介紹人薪資帳戶時介紹人須在職。</li>
+            </ul>
+          </div>
+          <div class="card-icon" aria-hidden="true">
+            <img src="https://raw.githubusercontent.com/KY888KAI/Cmoney_vibeCoding_test/main/%20receive.png" alt="" loading="lazy" />
+          </div>
+        </div>
+      </article> </div> </section>  <!-- Section 2: Bonus by Level --> <section aria-labelledby="bonus-title"> <h2 id="bonus-title" class="section-title">各職等對應獎金金額</h2> <p class="section-intro">依被推薦人錄取職等，對應不同獎金金額，鼓勵同仁主動網羅合適人才。</p> <div class="bar-chart"> <!-- Desktop 垂直長條圖 --> <div class="bonus-chart-desktop" aria-hidden="true">
+        <div class="bonus-bars"> <div class="bar-col">
+            <div class="bar-track-vertical"> <div class="bar-fill-vertical" style="height: 20%;"></div> </div>
+            <div class="bar-meta">
+              <div class="bar-level">2 職等</div>
+              <div class="bar-amount">新台幣 10,000 元整</div>
+            </div>
+          </div> <div class="bar-col">
+            <div class="bar-track-vertical"> <div class="bar-fill-vertical" style="height: 35%;"></div> </div>
+            <div class="bar-meta">
+              <div class="bar-level">3 職等</div>
+              <div class="bar-amount">新台幣 35,000 元整</div>
+            </div>
+          </div> <div class="bar-col">
+            <div class="bar-track-vertical"> <div class="bar-fill-vertical" style="height: 50%;"></div> </div>
+            <div class="bar-meta">
+              <div class="bar-level">4 職等</div>
+              <div class="bar-amount">新台幣 60,000 元整</div>
+            </div>
+          </div> <div class="bar-col">
+            <div class="bar-track-vertical"> <div class="bar-fill-vertical" style="height: 75%;"></div> </div>
+            <div class="bar-meta">
+              <div class="bar-level">5 職等</div>
+              <div class="bar-amount">新台幣 100,000 元整</div>
+            </div>
+          </div> <div class="bar-col">
+            <div class="bar-track-vertical"> <div class="bar-fill-vertical" style="height: 100%;"></div> </div>
+            <div class="bar-meta">
+              <div class="bar-level">6 職等</div>
+              <div class="bar-amount">新台幣 150,000 元整</div>
+            </div>
+          </div> </div> </div> <!-- Mobile 水平長條圖 --> <div class="bonus-chart-mobile">
+      <div class="bar-row">
+        <div class="bar-row-label">2 職等</div>
+        <div class="bar-row-track">
+          <div class="bar-row-fill" style="width: var(--lv2);">
+            <span class="bar-row-amount">新台幣 10,000 元整</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="bar-row">
+        <div class="bar-row-label">3 職等</div>
+        <div class="bar-row-track">
+          <div class="bar-row-fill" style="width: var(--lv3);">
+            <span class="bar-row-amount">新台幣 35,000 元整</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="bar-row">
+        <div class="bar-row-label">4 職等</div>
+        <div class="bar-row-track">
+          <div class="bar-row-fill" style="width: var(--lv4);">
+            <span class="bar-row-amount">新台幣 60,000 元整</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="bar-row">
+        <div class="bar-row-label">5 職等</div>
+        <div class="bar-row-track">
+          <div class="bar-row-fill" style="width: var(--lv5);">
+            <span class="bar-row-amount">新台幣 100,000 元整</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="bar-row">
+        <div class="bar-row-label">6 職等</div>
+        <div class="bar-row-track">
+          <div class="bar-row-fill" style="width: var(--lv6);">
+            <span class="bar-row-amount">新台幣 150,000 元整</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div> </section> <!-- Section 3: Application Process --> <section aria-labelledby="process-title"> <h2 id="process-title" class="section-title">推薦獎金申請流程</h2> <p class="section-intro">請依下列步驟完成推薦，方便公司進入招募流程並進行後續獎金核發。</p> <ol class="process-list"> <li class="process-item"> <span class="process-step">1</span> <div class="process-text"> 介紹人至「<a href="https://forms.gle/7v8uJCHP9s9EeZw2A" target="_blank" rel="noopener noreferrer">推薦人才申請單</a>」填寫完整資料。 </div> </li> <li class="process-item"> <span class="process-step">2</span> <div class="process-text"> 被推薦人進入招募流程，流程依照該職位之正常招募流程進行。 </div> </li> <li class="process-item"> <span class="process-step">3</span> <div class="process-text"> 被推薦人成功入職且通過試用期後，由人力資源部申請獎金發放。 </div> </li> </ol> </section>  <!-- Section 4: Other Notes --> <section aria-labelledby="other-title"> <h2 id="other-title" class="section-title">其他事項與權利保留</h2> <div class="small-print"> <ul> <li>本辦法之獎金屬公司提供之額外獎勵措施，並非員工應享有之固定薪資報酬。</li> <li>獎金之核發金額、資格及條件，若遇政府法令變動或公司政策調整，公司得視情況修正或暫停本辦法之適用。</li> <li>公司保留對本辦法最終解釋、修訂及中止之權利。</li> <li>如有爭議，以人力資源部最終認定為準。</li> </ul> </div> </section> </main> 
+
+<script>
+  // Auto dark mode: follow OS setting (no manual toggle)
+  (function(){
+    const mq = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)');
+    if(!mq) return;
+    const apply = () => document.body.classList.toggle('theme-dark', mq.matches);
+    apply();
+    // React to system changes
+    if (mq.addEventListener) mq.addEventListener('change', apply);
+    else if (mq.addListener) mq.addListener(apply);
+  })();
+
+  // Scroll animation (IntersectionObserver)
+  (function () {
+    const prefersReduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (prefersReduced) return;
+
+    // 自動掛上 reveal class（不用你手動一個個加）
+    const addReveal = (el, extra) => {
+      if (!el) return;
+      el.classList.add('reveal');
+      if (extra) el.classList.add(extra);
+    };
+
+    // Hero：文字由左、圖片由右
+    const hero = document.querySelector('.hero');
+    if (hero) {
+      addReveal(hero.querySelector('.hero-text'), 'from-left');
+      addReveal(hero.querySelector('.hero-visual'), 'from-right');
+    }
+
+    // 每個 section：標題/說明/主要內容
+    document.querySelectorAll('section').forEach((sec) => {
+      addReveal(sec.querySelector('.section-title'), 'from-left');
+      addReveal(sec.querySelector('.section-intro'));
+
+      // cards
+      const cards = sec.querySelectorAll('.card');
+      cards.forEach((card, idx) => {
+        addReveal(card);
+        // 小幅 stagger
+        card.style.transitionDelay = (idx * 70) + 'ms';
+      });
+
+      // chart：不要整塊位移（由另一個 observer 觸發填充動畫）
+
+      // process
+      const steps = sec.querySelectorAll('.process-item');
+      steps.forEach((step, idx) => {
+        addReveal(step);
+        step.style.transitionDelay = (idx * 80) + 'ms';
+      });
+
+      // small print
+      const sp = sec.querySelector('.small-print');
+      if (sp) addReveal(sp);
+    });
+
+    const targets = Array.from(document.querySelectorAll('.reveal'));
+
+    const io = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('in-view');
+            io.unobserve(entry.target); // 只進場一次
+          }
+        });
+      },
+      {
+        root: null,
+        threshold: 0.18,
+        rootMargin: '0px 0px -10% 0px'
+      }
+    );
+
+    targets.forEach((el) => io.observe(el));
+
+    // Bonus chart：進到視窗時，膠囊/溫度計「由空填滿」
+    const chartEl = document.querySelector('.bar-chart');
+    if (chartEl) {
+      const chartIO = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              chartEl.classList.add('chart-in-view');
+              chartIO.disconnect(); // 只播放一次
+            }
+          });
+        },
+        { threshold: 0.25, rootMargin: '0px 0px -10% 0px' }
+      );
+      chartIO.observe(chartEl);
+    }
+  })();
+</script>
+
+</body> </html>
