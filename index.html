@@ -880,7 +880,7 @@ body.theme-dark .on-top{
         // Mobile hysteresis: once shown, keep visible until near top (prevents bottom "bounce" from hiding it). 
         let mobileStickyVisible = false;
 
-        const topHideThreshold = 120; // px (mobile Safari may not land exactly on 0)
+        const topHideThreshold = 60; // px (mobile Safari may not land exactly on 0)
 
         // Desktop: show after scrolling down a bit.
         // Mobile: only show when reaching the "其他事項與權利保留" section (avoid appearing too early).
@@ -891,8 +891,11 @@ body.theme-dark .on-top{
           if (!mqMobile.matches) { mobileShowFrom = null; return; }
           const otherSection = document.querySelector('section[aria-labelledby="other-title"]') || document.getElementById('other-title')?.closest('section');
           if (!otherSection) { mobileShowFrom = window.innerHeight * 1.2; return; }
-          // Show when user has scrolled to (or past) the start of the small-print section.
-          mobileShowFrom = otherSection.offsetTop - 40;
+
+          // ✅ Avoid the threshold being too close to the page bottom (otherwise the button never gets a chance to appear).
+          const raw = otherSection.offsetTop - 40;
+          const maxAllowed = document.body.scrollHeight - window.innerHeight * 1.2;
+          mobileShowFrom = Math.min(raw, maxAllowed);
         };
 
         const showAt = () => {
