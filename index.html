@@ -643,7 +643,7 @@ body.theme-dark .process-desc{ color: var(--dm-muted); }
   border:none;
   opacity:0;
   pointer-events:none;
-  transition:opacity 300ms ease, transform 300ms ease;
+  transition:opacity 240ms ease, transform 240ms ease;
   transform:translateY(6px);
   z-index:999;
 }
@@ -658,6 +658,7 @@ body.theme-dark .process-desc{ color: var(--dm-muted); }
     height:36px;
     box-shadow:none;
     background:rgba(0,0,0,.06);
+    transition:opacity 180ms ease, transform 180ms ease;
   }
 }
 
@@ -874,34 +875,31 @@ body.theme-dark .on-top{
       // On-top button (desktop + mobile)
       const btn = document.querySelector('.on-top');
       if (btn) {
-        // When true, we force-hide the button until user scrolls down again.
-        // This guarantees: click -> hide immediately; stay hidden at top; only re-appear after scrolling down enough.
-        let lockHidden = false;
-        // After clicking, we only unlock AFTER we have returned near top once,
-        // then the user scrolls down to the target section again.
-        let seenTopAfterClick = false;
-        // Mobile hysteresis: once shown, keep visible until near top (prevents bottom "bounce" from hiding it). 
-        let mobileStickyVisible = false;
-
-        const topHideThreshold = 60; // px (mobile Safari may not land exactly on 0)
-
-        // Desktop: show after scrolling down a bit.
-        // Mobile: only show when reaching the "其他事項與權利保留" section (avoid appearing too early).
         const mqMobile = window.matchMedia('(max-width: 767px)');
+        const topHideThreshold = 60; // px
+
+        // After clicking, keep hidden until user scrolls DOWN to the target threshold again.
+        let hiddenUntilThreshold = false;
+
+        // Mobile threshold: show ONLY when reaching "其他事項與權利保留" section (avoid appearing too early).
+        // Desktop threshold: show after ~1 screen.
         let mobileShowFrom = null;
+
+        const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
 
         const computeMobileShowFrom = () => {
           if (!mqMobile.matches) { mobileShowFrom = null; return; }
           const otherSection = document.querySelector('section[aria-labelledby="other-title"]') || document.getElementById('other-title')?.closest('section');
-          if (!otherSection) { mobileShowFrom = window.innerHeight * 1.2; return; }
+          const fallback = window.innerHeight * 1.2;
+          if (!otherSection) { mobileShowFrom = fallback; return; }
 
-          // ✅ Avoid the threshold being too close to the page bottom (otherwise the button never gets a chance to appear).
-          const raw = otherSection.offsetTop - 40;
-          const maxAllowed = document.body.scrollHeight - window.innerHeight * 1.2;
-          mobileShowFrom = Math.min(raw, maxAllowed);
+          // Show slightly BEFORE the section title enters the viewport.
+          const raw = otherSection.offsetTop - 80;
+          const maxAllowed = document.documentElement.scrollHeight - window.innerHeight - 20;
+          mobileShowFrom = clamp(raw, 0, maxAllowed);
         };
 
-        const showAt = () => {
+        const threshold = () => {
           if (mqMobile.matches) {
             if (mobileShowFrom == null) computeMobileShowFrom();
             return mobileShowFrom ?? (window.innerHeight * 1.2);
@@ -910,92 +908,55 @@ body.theme-dark .on-top{
         };
 
         const hideBtn = () => btn.classList.remove('visible');
-        const maybeShowBtn = () => {
-          const threshold = showAt();
+        const showBtn = () => btn.classList.add('visible');
 
-          if (mqMobile.matches) {
-            // On mobile, show only after reaching the target section once.
-            // After it becomes visible, keep it visible until user returns near top.
-            if (!mobileStickyVisible) {
-              if (window.scrollY >= threshold) {
-                mobileStickyVisible = true;
-                btn.classList.add('visible');
-              } else {
-                btn.classList.remove('visible');
-              }
-            } else {
-              btn.classList.add('visible');
-            }
-            return;
-          }
+        const updateBtn = () => {
+          const y = window.scrollY || window.pageYOffset || 0;
 
-          // Desktop: normal toggle by scroll distance
-          if (window.scrollY >= threshold) btn.classList.add('visible');
-          else btn.classList.remove('visible');
-        };
-
-        const update = () => {
           // Always hide near top.
-          if (window.scrollY <= topHideThreshold) {
-            // reset sticky state when back near top
-            mobileStickyVisible = false;
+          if (y <= topHideThreshold) {
             hideBtn();
             return;
           }
 
-          // If locked, keep hidden until user scrolls down past showAt.
-          if (lockHidden) {
+          // If user has clicked "on top", keep hidden until they scroll down to threshold again.
+          if (hiddenUntilThreshold) {
             hideBtn();
-
-            // IMPORTANT: during the smooth scroll back to top, scrollY may still be >= showAt().
-            // We must NOT unlock while scrolling up, otherwise the button can re-appear.
-            if (!seenTopAfterClick) {
-              if (window.scrollY <= topHideThreshold) {
-                seenTopAfterClick = true;
-              }
-              return;
-            }
-
-            // After we have reached (near) top once, only then allow re-appearing
-            // when user scrolls down to the target section again.
-            if (window.scrollY >= showAt()) {
-              lockHidden = false;
-              maybeShowBtn();
-            }
+            if (y >= threshold()) hiddenUntilThreshold = false;
             return;
           }
 
-          maybeShowBtn();
+          if (y >= threshold()) showBtn();
+          else hideBtn();
         };
 
         const handleResize = () => {
           computeMobileShowFrom();
-          update();
+          updateBtn();
         };
 
-        window.addEventListener('scroll', update, { passive: true });
+        window.addEventListener('scroll', updateBtn, { passive: true });
         window.addEventListener('resize', handleResize);
         if (mqMobile.addEventListener) mqMobile.addEventListener('change', handleResize);
         else if (mqMobile.addListener) mqMobile.addListener(handleResize);
 
         computeMobileShowFrom();
-        update();
+        updateBtn();
 
         btn.addEventListener('click', () => {
-          // Requirement: click -> immediately hide, and stay hidden until user scrolls down to the target section again.
-          lockHidden = true;
-          seenTopAfterClick = false;
-          mobileStickyVisible = false;
+          // Requirement:
+          // - click -> scroll to top
+          // - button hides immediately
+          // - stays hidden at top
+          // - only re-appears when user scrolls down to "其他事項與權利保留" (mobile) / after 1 screen (desktop)
+          hiddenUntilThreshold = true;
           hideBtn();
-
-          // Smooth scroll to top.
           window.scrollTo({ top: 0, behavior: 'smooth' });
 
-          // If smooth scrolling is unsupported / interrupted, we still enforce hiding.
-          // When user later scrolls down past showAt, update() will unlock.
-          // Also run an extra update shortly after click to cover iOS address-bar bounce.
-          setTimeout(update, 250);
-          setTimeout(update, 600);
+          // Extra updates for iOS address-bar / momentum scroll quirks
+          setTimeout(updateBtn, 120);
+          setTimeout(updateBtn, 420);
+          setTimeout(updateBtn, 820);
         });
       }
 
