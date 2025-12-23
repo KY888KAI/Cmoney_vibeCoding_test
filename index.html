@@ -906,8 +906,10 @@ body.theme-dark .on-top{
 
         // After clicking, keep hidden until user scrolls DOWN to the target threshold again.
         let hiddenUntilThreshold = false;
+        // Prevent iOS bounce / smooth-scroll quirks from accidentally clearing the lock.
+        let lockUntil = 0;
 
-        // Mobile threshold: show ONLY when reaching "其他事項與權利保留" section (avoid appearing too early).
+        // Mobile threshold: show ONLY when reaching "其他事項與權利保留" section.
         // Desktop threshold: show after ~1 screen.
         let mobileShowFrom = null;
 
@@ -949,20 +951,26 @@ body.theme-dark .on-top{
             return;
           }
 
-          // If user has clicked "on top", keep hidden until they scroll DOWN to the target threshold again
-          // (Prevent clearing during the smooth scroll up-to-top, which briefly starts at a large y.)
+          // If user has clicked "on top", keep hidden until:
+          // 1) lock window passed, and
+          // 2) user scrolls DOWN and reaches the threshold again.
           if (hiddenUntilThreshold) {
             hideBtn();
-            if (isDown && y >= threshold()) hiddenUntilThreshold = false;
-            return;
+
+            // During lock window, never clear (prevents bounce clearing)
+            if (performance.now() < lockUntil) return;
+
+            if (isDown && y >= threshold()) {
+              hiddenUntilThreshold = false;
+              // IMPORTANT: continue in the same tick so it can appear immediately
+            } else {
+              return;
+            }
           }
 
-          // Show once reaching threshold, and STAY visible afterwards (do not hide at bottom)
-          if (y >= threshold()) {
-            showBtn();
-          } else {
-            hideBtn();
-          }
+          // Show once reaching threshold, and hide before that.
+          if (y >= threshold()) showBtn();
+          else hideBtn();
         };
 
         const handleResize = () => {
@@ -982,12 +990,12 @@ body.theme-dark .on-top{
           // Requirement:
           // - click -> scroll to top
           // - button hides immediately
-          // - stays hidden at top
-          // - only re-appears when user scrolls down to "其他事項與權利保留" (mobile) / after 1 screen (desktop)
+          // - only re-appears when user scrolls DOWN to "其他事項與權利保留" (mobile) / after 1 screen (desktop)
           hiddenUntilThreshold = true;
+          lockUntil = performance.now() + 1200; // guard against iOS bounce while smooth-scrolling
           hideBtn();
 
-          // Reset direction tracker so the smooth scroll up doesn't look like a "down" scroll.
+          // Reset direction tracker.
           lastY = window.scrollY || window.pageYOffset || 0;
 
           window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -996,10 +1004,11 @@ body.theme-dark .on-top{
           setTimeout(() => { lastY = window.scrollY || window.pageYOffset || 0; updateBtn(); }, 120);
           setTimeout(() => { lastY = window.scrollY || window.pageYOffset || 0; updateBtn(); }, 420);
           setTimeout(() => { lastY = window.scrollY || window.pageYOffset || 0; updateBtn(); }, 820);
+          setTimeout(() => { lastY = window.scrollY || window.pageYOffset || 0; updateBtn(); }, 1320);
         });
       }
 
-      // Respect reduced motion: skip reveal/chart animations: skip reveal/chart animations
+      // Respect reduced motion: skip reveal/chart animations
       if (prefersReduced) {
         runTestsIfRequested();
         return;
