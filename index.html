@@ -913,21 +913,23 @@ body.theme-dark .on-top{
         const updateBtn = () => {
           const y = window.scrollY || window.pageYOffset || 0;
 
-          // Always hide near top.
+          // Always hide near top
           if (y <= topHideThreshold) {
             hideBtn();
             return;
           }
 
-          // If user has clicked "on top", keep hidden until they scroll down to threshold again.
+          // If user has clicked "on top", keep hidden until they scroll down to threshold again
           if (hiddenUntilThreshold) {
             hideBtn();
             if (y >= threshold()) hiddenUntilThreshold = false;
             return;
           }
 
-          if (y >= threshold()) showBtn();
-          else hideBtn();
+          // Show once reaching threshold, and STAY visible afterwards (do not hide at bottom)
+          if (y >= threshold()) {
+            showBtn();
+          }
         };
 
         const handleResize = () => {
