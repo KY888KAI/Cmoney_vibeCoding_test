@@ -5,488 +5,691 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>CMoney 員工推薦獎金計畫</title>
   <style>
-    /* ===== Dark mode (auto: follows OS) =====
-       Goal: Red-tinted dark mode (not "poison black"), with cards staying lightly red.
-    ========================================= */
-    :root{
-      /* red-tinted dark palette */
-      --dm-bg-1:#2a0f14;     /* deep warm red */
-      --dm-bg-2:#140d10;     /* near-black, but warm */
-      --dm-surface:#2b1419;  /* card/hero surface */
-      --dm-surface-2:#251116;
-      --dm-card-tint: rgba(226,30,40,.12); /* light red wash on cards */
-      --dm-text:#f3f4f6;
-      --dm-muted:#d4b7bb;
-      --dm-track:#3b2026;
-      --dm-shadow: 0 18px 45px rgba(0,0,0,.28);
+/* ===== Dark mode (auto, follow OS) =====
+   Goal: Red-tinted dark mode (not "poison black"), with cards staying lightly red.
+   ====================================== */
+:root{
+  /* red-tinted dark palette */
+  --dm-bg-1:#2a0f14;     /* deep warm red */
+  --dm-bg-2:#140d10;     /* near-black, but warm */
+  --dm-surface:#2b1419;  /* card/hero surface */
+  --dm-surface-2:#251116;
+  --dm-card-tint: rgba(226,30,40,.12); /* light red wash on cards */
+  --dm-text:#f3f4f6;
+  --dm-muted:#d4b7bb;
+  --dm-track:#3b2026;
+  --dm-shadow: 0 18px 45px rgba(0,0,0,.28);
+}
 
-      --cm-red: #e21e28;
-      --cm-black: #191919;
-      --bg-light: #f5f5f7;
-      --card-bg: #ffffff;
-      --border-subtle: #e2e2e8;
-      --metal-white: #fdfdfd;
-      --text-muted: #555666;
-      --accent-soft: #ffe5e7;
+/* overall background: warm red gradient */
+body.theme-dark{
+  background:
+    radial-gradient(circle at top left, rgba(226,30,40,.22) 0, rgba(226,30,40,.10) 18%, transparent 55%),
+    radial-gradient(circle at 80% 10%, rgba(255,128,136,.16) 0, transparent 45%),
+    linear-gradient(180deg, var(--dm-bg-1) 0, var(--dm-bg-2) 75%);
+  color:var(--dm-text);
+}
 
-      /* Referral bonus – mobile bar visual scale */
-      --lv2: 55%;  /* 10,000 */
-      --lv3: 66%;  /* 35,000 */
-      --lv4: 77%;  /* 60,000 */
-      --lv5: 88%;  /* 100,000 */
-      --lv6: 100%; /* 150,000 */
-    }
+/* hero / cards: keep "light red" surfaces */
+body.theme-dark .hero,
+body.theme-dark .card{
+  background:
+    radial-gradient(circle at top left, var(--dm-card-tint), transparent 60%),
+    linear-gradient(135deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+  box-shadow: var(--dm-shadow);
+  border: 1px solid rgba(255,255,255,.06);
+}
 
-    body.theme-dark{
-      background:
-        radial-gradient(circle at top left, rgba(226,30,40,.22) 0, rgba(226,30,40,.10) 18%, transparent 55%),
-        radial-gradient(circle at 80% 10%, rgba(255,128,136,.16) 0, transparent 45%),
-        linear-gradient(180deg, var(--dm-bg-1) 0, var(--dm-bg-2) 75%);
-      color:var(--dm-text);
-    }
+/* 1) Hero: slightly stronger than cards */
+body.theme-dark .hero{
+  background:
+    radial-gradient(circle at top left, rgba(226,30,40,.20), transparent 62%),
+    linear-gradient(135deg, rgba(255,255,255,.08), rgba(255,255,255,.04));
+  box-shadow: 0 22px 55px rgba(0,0,0,.34);
+  border: 1px solid rgba(255,255,255,.10);
+}
 
-    /* hero / cards surfaces */
-    body.theme-dark .hero,
-    body.theme-dark .card{
-      background:
-        radial-gradient(circle at top left, var(--dm-card-tint), transparent 60%),
-        linear-gradient(135deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
-      box-shadow: var(--dm-shadow);
-      border: 1px solid rgba(255,255,255,.06);
-    }
+/* 3) Chart / Process: functional (no surface) */
+body.theme-dark .bar-chart{ background: transparent; border: 0; box-shadow: none; }
+body.theme-dark .process-item{ background: transparent; border-radius: 0; box-shadow: none; }
 
-    /* Night mode tiering */
-    body.theme-dark .hero{
-      background:
-        radial-gradient(circle at top left, rgba(226,30,40,.20), transparent 62%),
-        linear-gradient(135deg, rgba(255,255,255,.08), rgba(255,255,255,.04));
-      box-shadow: 0 22px 55px rgba(0,0,0,.34);
-      border: 1px solid rgba(255,255,255,.10);
-    }
+/* 4) Small print: secondary (subtle, like day mode) */
+body.theme-dark .small-print{
+  font-size: 13px;
+  line-height: 1.65;
+  color: var(--dm-muted);
+  background: rgba(255,255,255,.03);
+  border: none;
+  box-shadow: none;
+}
+body.theme-dark .small-print li{ color: var(--dm-muted); }
 
-    /* Chart / Process: functional */
-    body.theme-dark .bar-chart{ background: transparent; border: 0; box-shadow: none; }
-    body.theme-dark .process-item{ background: transparent; border-radius: 0; box-shadow: none; }
+body.theme-dark .section-title{color:var(--dm-text);} 
+body.theme-dark .section-intro,
+body.theme-dark .hero-subtitle,
+body.theme-dark .card ul{color:var(--dm-muted);} 
 
-    /* Small print: secondary */
-    body.theme-dark .small-print{
-      font-size: 13px;
-      line-height: 1.65;
-      color: var(--dm-muted);
-      background: rgba(255,255,255,.03);
-      border: none;
-      box-shadow: none;
-    }
-    body.theme-dark .small-print li{ color: var(--dm-muted); }
+/* 夜間模式：職等文字（圖表 label）改白色 */
+body.theme-dark .bonus-chart-desktop .bar-level,
+body.theme-dark .bonus-chart-mobile .bar-row-label{ color: var(--dm-text); }
 
-    body.theme-dark .section-title{color:var(--dm-text);} 
-    body.theme-dark .section-intro,
-    body.theme-dark .hero-subtitle,
-    body.theme-dark .card ul{color:var(--dm-muted);} 
+/* 夜間模式：膠囊底軌道提高對比 */
+body.theme-dark .bar-track-vertical,
+body.theme-dark .bar-row-track{ background: rgba(255,255,255,.14); }
 
-    /* 夜間模式：職等文字（圖表 label）改白色 */
-    body.theme-dark .bonus-chart-desktop .bar-level,
-    body.theme-dark .bonus-chart-mobile .bar-row-label{
-      color: var(--dm-text);
-    }
+body.theme-dark a{color:#ff9aa2;}
 
-    /* 夜間模式：膠囊底軌道提高對比 */
-    body.theme-dark .bar-track-vertical,
-    body.theme-dark .bar-row-track{
-      background: rgba(255,255,255,.14);
-    }
+/* Hero text tweaks for dark theme */
+body.theme-dark .hero-title span.oney{ color: var(--dm-text) !important; }
 
-    body.theme-dark a{color:#ff9aa2;}
+body.theme-dark .hero-badge{
+  background: linear-gradient(180deg, rgba(255,255,255,.18), rgba(255,255,255,.08));
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  box-shadow:
+    0 8px 20px rgba(0,0,0,.22),
+    inset 0 0 0 1px rgba(255,255,255,.18);
+}
+body.theme-dark .hero-badge span{ color: var(--dm-text); }
 
-    /* Hero text tweaks for dark theme */
-    body.theme-dark .hero-title span.oney{
-      color: var(--dm-text) !important;
-    }
+@media (prefers-color-scheme: dark){body{color-scheme:dark;} }
 
-    body.theme-dark .hero-badge{
-      background: linear-gradient(180deg, rgba(255,255,255,.18), rgba(255,255,255,.08));
-      backdrop-filter: blur(6px);
-      -webkit-backdrop-filter: blur(6px);
-      box-shadow:
-        0 8px 20px rgba(0,0,0,.22),
-        inset 0 0 0 1px rgba(255,255,255,.18);
-    }
-    body.theme-dark .hero-badge span{ color: var(--dm-text); }
+/* ============================================ */
 
-    @media (prefers-color-scheme: dark){ body{color-scheme:dark;} }
+html, body { margin: 0 auto; overflow-x: hidden; }
 
-    /* ============================================ */
+:root {
+  --cm-red: #e21e28;
+  --cm-black: #191919;
+  --bg-light: #f5f5f7;
+  --card-bg: #ffffff;
+  --border-subtle: #e2e2e8;
+  --metal-white: #fdfdfd;
+  --text-muted: #555666;
+  --accent-soft: #ffe5e7;
 
-    /* Base */
-    *{ box-sizing: border-box; }
-    html, body{ margin: 0; overflow-x: hidden; }
+  /* Referral bonus – mobile bar visual scale */
+  --lv2: 55%;  /* 10,000 */
+  --lv3: 66%;  /* 35,000 */
+  --lv4: 77%;  /* 60,000 */
+  --lv5: 88%;  /* 100,000 */
+  --lv6: 100%; /* 150,000 */
+}
 
-    body{
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background: radial-gradient(circle at top left, #fff8f8 0, #ffffff 45%, #f3f4f7 100%);
-      color: var(--cm-black);
-      line-height: 1.6;
-    }
+* { box-sizing: border-box; }
 
-    .page{
-      max-width: 1120px;
-      margin: 0 auto;
-      padding: 56px 24px 96px;
-    }
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: radial-gradient(circle at top left, #fff8f8 0, #ffffff 45%, #f3f4f7 100%);
+  color: var(--cm-black);
+  line-height: 1.6;
+}
 
-    h1, h2, h3{ margin: 0 0 16px; line-height: 1.3; }
-    p{ margin: 0 0 12px; font-size: 15px; line-height: 1.7; letter-spacing: 0.02em; }
+.page {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 56px 24px 96px;
+}
 
-    /* Hero */
-    .hero{
-      display: flex;
-      flex-direction: column;
-      gap: 24px;
-      align-items: flex-start;
-      justify-content: flex-start;
-      padding: 28px 20px 32px;
-      border-radius: 28px;
-      background: radial-gradient(circle at top left, rgba(226, 30, 40, 0.09), transparent 55%), linear-gradient(135deg, #ffffff, #f7f7fb);
-      box-shadow: 0 18px 45px rgba(0, 0, 0, 0.06);
-      width: 100%;
-    }
-    .hero-text{ width: 100%; }
-    .hero-visual{ width: 100%; display: flex; justify-content: center; align-items: center; }
+h1, h2, h3 { margin: 0 0 16px; line-height: 1.3; }
 
-    .hero-title span.cm{ color: var(--cm-red); font-weight: 800; }
-    .hero-title span.oney{ color: var(--cm-black); font-weight: 800; }
+p {
+  margin: 0 0 12px;
+  font-size: 15px;
+  line-height: 1.7;
+  letter-spacing: 0.02em;
+}
 
-    .hero-subtitle{ font-size: 15px; color: var(--text-muted); max-width: 36em; }
+.hero {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  align-items: flex-start;
+  justify-content: flex-start;
+  padding: 28px 20px 32px;
+  border-radius: 28px;
+  background: radial-gradient(circle at top left, rgba(226, 30, 40, 0.09), transparent 55%), linear-gradient(135deg, #ffffff, #f7f7fb);
+  box-shadow: 0 18px 45px rgba(0, 0, 0, 0.06);
+  width: 100%;
+}
 
-    .hero-badge{
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 6px 12px;
-      border-radius: 999px;
-      background: rgba(226, 30, 40, 0.06);
-      color: var(--cm-red);
-      font-size: 12px;
-      font-weight: 600;
-      margin-bottom: 16px;
-    }
+.hero-text { width: 100%; }
 
-    .hero-img{ width: 100%; max-width: 520px; height: auto; display: block; }
+.hero-visual {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-width: auto;
+}
 
-    @media (min-width: 900px){
-      p{ font-size: 16px; }
-      .hero{ flex-direction: row; align-items: center; justify-content: space-between; padding: 48px 48px 56px; }
-      .hero-text{ width: 38%; }
-      .hero-visual{ width: 62%; justify-content: flex-end; padding-left: 24px; }
-      .hero-img{ max-width: 600px; }
-    }
+@media (min-width: 900px) {
+  p { font-size: 16px; }
 
-    /* Sections */
-    section{ margin-top: 40px; }
+  .hero {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    padding: 48px 48px 56px;
+  }
 
-    .section-title{
-      position: relative;
-      font-size: 22px;
-      margin-bottom: 6px;
-      padding-left: 12px;
-      color: #111827;
-    }
-    .section-title::before{
-      content:"";
-      position:absolute;
-      top:4px;
-      bottom:4px;
-      left:0;
-      width:4px;
-      border-radius:999px;
-      background: var(--cm-red);
-    }
+  .hero-text { width: 38%; }
 
-    .section-intro{ font-size: 14px; color: var(--text-muted); margin-bottom: 20px; max-width: 40em; }
+  .hero-visual {
+    width: 62%;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    padding-left: 24px;
+  }
 
-    /* Cards */
-    .card-grid{ display: grid; grid-template-columns: 1fr; gap: 16px; }
-    @media (min-width: 640px){ .card-grid{ grid-template-columns: repeat(2, 1fr); } }
-    @media (min-width: 1024px){ .card-grid{ grid-template-columns: repeat(3, 1fr); } }
+  .hero-img {
+    max-width: 600px;
+    height: auto;
+    display: block;
+    margin-left: auto;
+  }
+}
 
-    .card{
-      background: radial-gradient(circle at top left, rgba(226, 30, 40, 0.06), transparent 55%), linear-gradient(135deg, #ffffff, #f7f7fb);
-      border-radius: 20px;
-      padding: 20px 20px 22px;
-      border: none;
-      box-shadow: 0 10px 26px rgba(15, 23, 42, 0.08);
-    }
+.hero-title span.cm { color: var(--cm-red); font-weight: 800; }
+.hero-title span.oney { color: var(--cm-black); font-weight: 800; }
 
-    .card h3{ font-size: 15px; margin-bottom: 10px; }
-    .card ul{ margin: 0; padding-left: 18px; font-size: 13px; color: var(--text-muted); }
+.hero-subtitle {
+  font-size: 15px;
+  color: var(--text-muted);
+  max-width: 36em;
+}
 
-    /* Eligibility – icon card (mobile & desktop: horizontal) */
-    .card.card-referral .card-top,
-    .card.card-reference .card-top,
-    .card.card-receive .card-top{
-      display: flex;
-      flex-direction: row;
-      align-items: center;
-      justify-content: space-between;
-      gap: 16px;
-    }
+.hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: rgba(226, 30, 40, 0.06);
+  color: var(--cm-red);
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: 16px;
+}
 
-    .card.card-referral .card-content,
-    .card.card-reference .card-content,
-    .card.card-receive .card-content{
-      flex: 1;
-      min-width: 0;
-    }
+section { margin-top: 40px; }
 
-    .card.card-referral .card-icon,
-    .card.card-reference .card-icon,
-    .card.card-receive .card-icon{
-      width: 96px;
-      height: 96px;
-      flex: 0 0 auto;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
+.section-title {
+  position: relative;
+  font-size: 22px;
+  margin-bottom: 6px;
+  padding-left: 12px;
+  color: #111827;
+}
 
-    .card.card-referral .card-icon img,
-    .card.card-reference .card-icon img,
-    .card.card-receive .card-icon img{
-      width: 100%;
-      height: 100%;
-      display: block;
-      object-fit: contain;
-    }
+.section-title::before {
+  content:"";
+  position:absolute;
+  top:4px;
+  bottom:4px;
+  left:0;
+  width:4px;
+  border-radius:999px;
+  background: var(--cm-red);
+}
 
-    @media (min-width: 768px){
-      .card.card-referral .card-top,
-      .card.card-reference .card-top,
-      .card.card-receive .card-top{ gap: 18px; }
+.section-intro {
+  font-size: 14px;
+  color: var(--text-muted);
+  margin-bottom: 20px;
+  max-width: 40em;
+}
 
-      .card.card-referral .card-icon,
-      .card.card-reference .card-icon,
-      .card.card-receive .card-icon{ width: 120px; height: 120px; }
-    }
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+  gap: 16px;
+}
 
-    /* Bonus chart container: remove card entirely */
-    .bar-chart{ background: transparent; border: 0; border-radius: 0; box-shadow: none; padding: 0; }
+@media (min-width: 640px) {
+  .card-grid { grid-template-columns: repeat(2, 1fr); }
+}
 
-    /* Desktop: vertical bars */
-    .bonus-chart-desktop{ display: none; }
-    @media (min-width: 768px){
-      .bonus-chart-desktop{ display: block; padding: 22px 22px 12px; }
-    }
+@media (min-width: 1024px) {
+  .card-grid { grid-template-columns: repeat(3, 1fr); }
+}
 
-    .bonus-bars{ display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; }
+.card {
+  background: radial-gradient(circle at top left, rgba(226, 30, 40, 0.06), transparent 55%), linear-gradient(135deg, #ffffff, #f7f7fb);
+  border-radius: 20px;
+  padding: 20px 20px 22px;
+  border: none;
+  box-shadow: 0 10px 26px rgba(15, 23, 42, 0.08);
+}
 
-    .bonus-chart-desktop .bar-col{ flex: 1; display: flex; flex-direction: column; align-items: center; gap: 10px; }
-    .bonus-chart-desktop .bar-meta{ text-align: center; line-height: 1.25; }
-    .bonus-chart-desktop .bar-level{ font-size: 13px; font-weight: 700; color: #111827; }
-    .bonus-chart-desktop .bar-amount{ margin-top: 6px; font-variant-numeric: tabular-nums; color: var(--cm-red); font-weight: 700; font-size: 13px; }
+/* Eligibility – icon card (mobile & desktop: horizontal) */
+.card.card-referral .card-top,
+.card.card-reference .card-top,
+.card.card-receive .card-top {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start; /* align text blocks consistently */
+  justify-content: space-between;
+  gap: 16px;
+}
 
-    .bonus-chart-desktop .bar-track-vertical{ position: relative; width: 28px; height: 140px; border-radius: 999px; background: #ececf2; overflow: hidden; }
-    .bonus-chart-desktop .bar-fill-vertical{ position: absolute; left: 0; right: 0; bottom: 0; border-radius: inherit; background: linear-gradient(180deg, #ff8088, var(--cm-red)); box-shadow: 0 0 10px rgba(226, 30, 40, 0.6); }
+.card.card-referral .card-content,
+.card.card-reference .card-content,
+.card.card-receive .card-content {
+  flex: 1;
+  min-width: 0;
+}
 
-    /* Mobile: horizontal bars */
-    .bonus-chart-mobile{ display: flex; flex-direction: column; gap: 10px; padding: 4px 4px 0; }
-    @media (min-width: 768px){ .bonus-chart-mobile{ display: none; } }
+.card.card-referral .card-icon,
+.card.card-reference .card-icon,
+.card.card-receive .card-icon {
+  width: 96px;
+  height: 96px;
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  align-self: flex-start;
+  margin-top: 2px;
+}
 
-    .bonus-chart-mobile .bar-row{ display: flex; align-items: center; gap: 14px; font-size: 13px; }
-    .bonus-chart-mobile .bar-row-label{ width: auto; min-width: unset; margin-right: 0; font-weight: 600; color: #111827; flex-shrink: 0; }
+.card.card-referral .card-icon img,
+.card.card-reference .card-icon img,
+.card.card-receive .card-icon img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: contain;
+}
 
-    .bonus-chart-mobile .bar-row-track{
-      position: relative;
-      flex: 1;
-      height: 16px;
-      border-radius: 999px;
-      background: #ececf2;
-      overflow: hidden;
-      display: flex;
-      align-items: center;
-    }
+@media (min-width: 768px) {
+  .card.card-referral .card-top,
+  .card.card-reference .card-top,
+  .card.card-receive .card-top { gap: 18px; }
 
-    .bonus-chart-mobile .bar-row-fill{
-      position: relative;
-      height: 100%;
-      border-radius: inherit;
-      background: linear-gradient(90deg, #ff8088, var(--cm-red));
-      box-shadow: 0 0 10px rgba(226, 30, 40, 0.45);
-      display: flex;
-      align-items: center;
-      justify-content: flex-start;
-      padding: 0 12px;
-      min-width: 14ch;
-    }
+  .card.card-referral .card-icon,
+  .card.card-reference .card-icon,
+  .card.card-receive .card-icon {
+    width: 120px;
+    height: 120px;
+  }
+}
 
-    .bonus-chart-mobile .bar-row-amount{
-      position: relative;
-      z-index: 1;
-      padding: 0;
-      font-size: 12px;
-      font-weight: 600;
-      color: #ffffff;
-      white-space: nowrap;
-    }
+.card h3 { font-size: 15px; margin-bottom: 10px; }
 
-    /* Process */
-    .process-list{ list-style: none; margin: 0; padding: 0; position: relative; margin-left: 20px; }
-    .process-item{ position: relative; padding: 0 0 24px 32px; font-size: 14px; }
-    .process-step{
-      position: absolute;
-      left: -12px;
-      top: 0;
-      width: 20px;
-      height: 20px;
-      border-radius: 50%;
-      background: var(--cm-red);
-      color: #fff;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 12px;
-      font-weight: 600;
-      z-index: 2;
-      box-shadow: none;
-    }
+.card ul {
+  margin: 0;
+  padding-left: 18px;
+  font-size: 13px;
+  color: var(--text-muted);
+}
 
-    .process-text a{ color: var(--cm-red); font-weight: 600; text-decoration: none; border-bottom: 1px solid rgba(226, 30, 40, 0.4); }
-    .process-text a:hover{ border-bottom-width: 2px; }
+/* Bonus chart container: remove card entirely */
+.bar-chart{
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  padding: 0;
+}
 
-    /* Desktop: horizontal checkpoint (no arrows; use separators) */
-    @media (min-width: 768px){
-      .process-list{
-        margin-left: 0;
-        display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: 0;
-      }
+/* Desktop: 垂直長條圖 */
+.bonus-chart-desktop { display: none; }
 
-      .process-item{ padding: 10px 24px 0 24px; background: transparent; border-radius: 0; box-shadow: none; }
+@media (min-width: 768px) {
+  .bonus-chart-desktop {
+    display: block;
+    padding: 22px 22px 12px;
+  }
+}
 
-      .process-item + .process-item{ border-left: 1px solid rgba(17,24,39,0.12); }
-      body.theme-dark .process-item + .process-item{ border-left-color: rgba(255,255,255,0.18); }
+.bonus-bars {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+}
 
-      .process-step{ position: static; width: 28px; height: 28px; font-size: 12px; font-weight: 800; margin-bottom: 10px; }
-      .process-text{ font-size: 15px; line-height: 1.7; max-width: 30ch; }
-    }
+.bonus-chart-desktop .bar-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
 
-    /* Small print */
-    .small-print{
-      font-size: 13px;
-      line-height: 1.65;
-      color: var(--text-muted);
-      padding: 20px 20px 22px;
-      border-radius: 14px;
-      background: rgba(0, 0, 0, 0.02);
-      border: none;
-    }
-    .small-print ul{ margin: 0; padding-left: 18px; }
-    .small-print li{ margin-bottom: 10px; }
-    .small-print li:last-child{ margin-bottom: 0; }
+.bonus-chart-desktop .bar-meta {
+  text-align: center;
+  line-height: 1.25;
+}
 
-    /* Bonus chart – thermometer fill animation */
-    .bonus-chart-mobile .bar-row-fill{
-      transform-origin: left center;
-      transform: scaleX(0);
-      transition: transform 1400ms cubic-bezier(0.22, 1, 0.36, 1);
-    }
+.bonus-chart-desktop .bar-level {
+  font-size: 13px;
+  font-weight: 700;
+  color: #111827;
+}
 
-    .bonus-chart-desktop .bar-fill-vertical{
-      transform-origin: center bottom;
-      transform: scaleY(0);
-      transition: transform 1600ms cubic-bezier(0.22, 1, 0.36, 1);
-    }
+.bonus-chart-desktop .bar-amount {
+  margin-top: 6px;
+  font-variant-numeric: tabular-nums;
+  color: var(--cm-red);
+  font-weight: 700;
+  font-size: 13px;
+}
 
-    .bar-chart.chart-in-view .bonus-chart-mobile .bar-row-fill{ transform: scaleX(1); }
-    .bar-chart.chart-in-view .bonus-chart-desktop .bar-fill-vertical{ transform: scaleY(1); }
+.bonus-chart-desktop .bar-track-vertical {
+  position: relative;
+  width: 28px;
+  height: 140px;
+  border-radius: 999px;
+  background: #ececf2;
+  overflow: hidden;
+}
 
-    /* Scroll reveal */
-    .reveal{
-      opacity: 0;
-      transform: translateY(16px);
-      transition: opacity 700ms ease, transform 700ms ease;
-      will-change: opacity, transform;
-    }
-    .reveal.in-view{ opacity: 1; transform: translateY(0); }
+.bonus-chart-desktop .bar-fill-vertical {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: inherit;
+  background: linear-gradient(180deg, #ff8088, var(--cm-red));
+  box-shadow: 0 0 10px rgba(226, 30, 40, 0.6);
+}
 
-    .reveal.from-left{ transform: translateX(-16px); }
-    .reveal.from-right{ transform: translateX(16px); }
-    .reveal.from-left.in-view,
-    .reveal.from-right.in-view{ transform: translateX(0); }
+/* Mobile: 水平長條圖 */
+.bonus-chart-mobile {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 4px 4px 0;
+}
 
-    @media (prefers-reduced-motion: reduce){
-      .reveal{ opacity: 1 !important; transform: none !important; transition: none !important; }
-      .bonus-chart-mobile .bar-row-fill,
-      .bonus-chart-desktop .bar-fill-vertical{ transform: none !important; transition: none !important; }
-    }
+@media (min-width: 768px) {
+  .bonus-chart-mobile { display: none; }
+}
 
-    /* On-top button */
-    .on-top{
-      position:fixed;
-      right:24px;
-      bottom:24px;
-      width:40px;
-      height:40px;
-      border-radius:999px;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      cursor:pointer;
-      background:rgba(0,0,0,.08);
-      color:#111827;
-      box-shadow:0 8px 20px rgba(15,23,42,.18);
-      border:none;
-      opacity:0;
-      pointer-events:none;
-      transition:opacity 300ms ease, transform 300ms ease;
-      transform:translateY(6px);
-      z-index:999;
-    }
-    .on-top.visible{ opacity:.78; pointer-events:auto; transform:translateY(0); }
-    .on-top:hover{ opacity:.9; }
+.bonus-chart-mobile .bar-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font-size: 13px;
+}
 
-    /* Mobile: show, but subtle (no shadow) */
-    @media (max-width: 767px){
-      .on-top{
-        right:16px;
-        bottom:16px;
-        width:36px;
-        height:36px;
-        box-shadow:none;
-        background:rgba(0,0,0,.06);
-      }
-    }
-    @media (hover: none){
-      .on-top:hover{ opacity:.78; }
-    }
+.bonus-chart-mobile .bar-row-label {
+  width: auto;
+  min-width: unset;
+  margin-right: 0;
+  font-weight: 600;
+  color: #111827;
+  flex-shrink: 0;
+}
 
-    body.theme-dark .on-top{
-      background:rgba(255,255,255,.12);
-      color:var(--dm-text);
-      box-shadow:none; /* keep subtle in dark */
-    }
+.bonus-chart-mobile .bar-row-track {
+  position: relative;
+  flex: 1;
+  height: 16px;
+  border-radius: 999px;
+  background: #ececf2;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+}
+
+.bonus-chart-mobile .bar-row-fill {
+  position: relative;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #ff8088, var(--cm-red));
+  box-shadow: 0 0 10px rgba(226, 30, 40, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 0 12px;
+  min-width: 14ch;
+}
+
+.bonus-chart-mobile .bar-row-amount {
+  position: relative;
+  z-index: 1;
+  padding: 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: #ffffff;
+  white-space: nowrap;
+}
+
+/* ===== Application Process (desktop: 3 columns with separators, mobile: timeline) ===== */
+.process-list{
+  list-style:none;
+  margin:0;
+  padding:0;
+  display:grid;
+  grid-template-columns: 1fr;
+}
+
+.process-item{
+  position: relative;
+  padding: 16px 0;
+}
+
+.process-head{
+  display:flex;
+  align-items:flex-start;
+  gap: 12px;
+}
+
+.process-step{
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  background: var(--cm-red);
+  color:#fff;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  font-size: 12px;
+  font-weight: 800;
+  flex: 0 0 auto;
+  box-shadow: none;
+  position: relative;
+  z-index: 2;
+}
+
+.process-body{ min-width: 0; }
+
+.process-title{
+  font-size: 15px;
+  font-weight: 800;
+  color:#111827;
+  margin: 0 0 6px;
+}
+
+/* Keep description hierarchy same as eligibility cards */
+.process-desc{
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--text-muted);
+}
+
+.process-desc a{
+  color: var(--cm-red);
+  font-weight: 700;
+  text-decoration: none;
+  border-bottom: 1px solid rgba(226, 30, 40, 0.4);
+}
+.process-desc a:hover{ border-bottom-width: 2px; }
+
+/* Mobile timeline: red vertical segment between steps */
+@media (max-width: 767px){
+  /* Mobile timeline: softer red, perfectly centered connector under the step circle */
+  .process-item:not(:last-child)::after{
+    content:"";
+    position:absolute;
+    /* center line to the 28px circle center (14px). For a 2px line, left = 14 - 1 = 13px */
+    left: 13px;
+    top: 44px;          /* just below the circle */
+    bottom: -6px;       /* breathing room */
+    width: 2px;
+    border-radius: 999px; /* round end-caps */
+    background: rgba(226, 30, 40, 0.55);
+    transform-origin: top;
+    transform: scaleY(0);
+    transition: transform 700ms ease;
+  }
+
+  /* When the step reveals in, grow the connector (scroll effect) */
+  .process-item.reveal.in-view:not(:last-child)::after{
+    transform: scaleY(1);
+  }
+}
+
+/* Desktop: three columns, separators, no card feel */
+@media (min-width: 768px){
+  .process-list{
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .process-item{
+    padding: 10px 24px 0 24px;
+  }
+
+  .process-item + .process-item{
+    border-left: 1px solid rgba(17,24,39,0.12);
+  }
+
+  body.theme-dark .process-item + .process-item{
+    border-left-color: rgba(255,255,255,0.18);
+  }
+
+  .process-title{ font-size: 16px; }
+  .process-desc{ font-size: 13px; }
+}
+
+body.theme-dark .process-title{ color: var(--dm-text); }
+body.theme-dark .process-desc{ color: var(--dm-muted); }
+
+.small-print {
+  margin-top: 16px;
+  font-size: 13px;
+  line-height: 1.65;
+  color: var(--text-muted);
+  padding: 20px 20px 22px;
+  border-radius: 14px;
+  background: rgba(0, 0, 0, 0.02);
+  border: none;
+}
+
+.small-print ul { margin: 0; padding-left: 18px; }
+.small-print li { margin-bottom: 10px; }
+.small-print li:last-child { margin-bottom: 0; }
+
+.divider { display: none; }
+
+.hero-img { width: 100%; max-width: 520px; height: auto; display: block; }
+@media (min-width: 900px) { .hero-img { max-width: 600px; } }
+
+/* Bonus chart – thermometer fill animation */
+.bonus-chart-mobile .bar-row-fill {
+  transform-origin: left center;
+  transform: scaleX(0);
+  transition: transform 1400ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.bonus-chart-desktop .bar-fill-vertical {
+  transform-origin: center bottom;
+  transform: scaleY(0);
+  transition: transform 1600ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.bar-chart.chart-in-view .bonus-chart-mobile .bar-row-fill { transform: scaleX(1); }
+.bar-chart.chart-in-view .bonus-chart-desktop .bar-fill-vertical { transform: scaleY(1); }
+
+/* Scroll reveal */
+.reveal {
+  opacity: 0;
+  transform: translateY(16px);
+  transition: opacity 700ms ease, transform 700ms ease;
+  will-change: opacity, transform;
+}
+.reveal.in-view { opacity: 1; transform: translateY(0); }
+.reveal.from-left { transform: translateX(-16px); }
+.reveal.from-right { transform: translateX(16px); }
+.reveal.from-left.in-view,
+.reveal.from-right.in-view { transform: translateX(0); }
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal { opacity: 1 !important; transform: none !important; transition: none !important; }
+  .bonus-chart-mobile .bar-row-fill,
+  .bonus-chart-desktop .bar-fill-vertical { transform: none !important; transition: none !important; }
+}
+
+/* On-top button */
+.on-top{
+  position:fixed;
+  right:24px;
+  bottom:24px;
+  width:40px;
+  height:40px;
+  border-radius:999px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+  background:rgba(0,0,0,.08);
+  color:#111827;
+  box-shadow:0 8px 20px rgba(15,23,42,.18);
+  border:none;
+  opacity:0;
+  pointer-events:none;
+  transition:opacity 300ms ease, transform 300ms ease;
+  transform:translateY(6px);
+  z-index:999;
+}
+.on-top.visible{ opacity:.78; pointer-events:auto; transform:translateY(0); }
+.on-top:hover{ opacity:.9; }
+
+@media (max-width: 767px){
+  .on-top{
+    right:16px;
+    bottom:16px;
+    width:36px;
+    height:36px;
+    box-shadow:none;
+    background:rgba(0,0,0,.06);
+  }
+}
+
+@media (hover: none){
+  .on-top:hover{ opacity:.78; }
+}
+
+body.theme-dark .on-top{
+  background:rgba(255,255,255,.12);
+  color:var(--dm-text);
+  box-shadow:0 10px 24px rgba(0,0,0,.35);
+}
   </style>
 </head>
 <body>
   <main class="page">
+    <!-- Hero Section -->
     <header class="hero">
       <div class="hero-text">
         <div class="hero-badge"><span>Internal Referral Bonus</span></div>
         <h1 class="hero-title">
-          <span class="cm" style="color:#E21E28;">CM</span><span class="oney">oney</span><br />
+          <span class="cm" style="color:#E21E28;">CM</span><span class="oney">oney</span><br>
           員工推薦獎金計畫
         </h1>
         <p class="hero-subtitle">為鼓勵全體員工推薦優秀人員至公司服務，協助公司網羅優秀人才，特訂定本辦法。</p>
       </div>
       <div class="hero-visual" aria-hidden="true">
-        <img
-          src="https://raw.githubusercontent.com/KY888KAI/Cmoney_vibeCoding_test/main/referral_bonus_top_03.png"
-          alt="referral bonus"
-          class="hero-img"
-        />
+        <img src="https://raw.githubusercontent.com/KY888KAI/Cmoney_vibeCoding_test/main/referral_bonus_top_03.png" alt="referral bonus" class="hero-img" />
       </div>
     </header>
 
+    <!-- Section 1: Eligibility -->
     <section aria-labelledby="eligibility-title">
       <h2 id="eligibility-title" class="section-title">適用對象與領取資格</h2>
       <p class="section-intro">說明被推薦人、介紹人及實際領取獎金之條件。</p>
@@ -502,11 +705,7 @@
               </ul>
             </div>
             <div class="card-icon" aria-hidden="true">
-              <img
-                src="https://raw.githubusercontent.com/KY888KAI/Cmoney_vibeCoding_test/main/Referral.png"
-                alt=""
-                loading="lazy"
-              />
+              <img src="https://raw.githubusercontent.com/KY888KAI/Cmoney_vibeCoding_test/main/Referral.png" alt="" loading="lazy" />
             </div>
           </div>
         </article>
@@ -521,11 +720,7 @@
               </ul>
             </div>
             <div class="card-icon" aria-hidden="true">
-              <img
-                src="https://raw.githubusercontent.com/KY888KAI/Cmoney_vibeCoding_test/main/Reference_02.png"
-                alt=""
-                loading="lazy"
-              />
+              <img src="https://raw.githubusercontent.com/KY888KAI/Cmoney_vibeCoding_test/main/Reference_02.png" alt="" loading="lazy" />
             </div>
           </div>
         </article>
@@ -539,132 +734,93 @@
               </ul>
             </div>
             <div class="card-icon" aria-hidden="true">
-              <img
-                src="https://raw.githubusercontent.com/KY888KAI/Cmoney_vibeCoding_test/main/%20receive.png"
-                alt=""
-                loading="lazy"
-              />
+              <img src="https://raw.githubusercontent.com/KY888KAI/Cmoney_vibeCoding_test/main/%20receive.png" alt="" loading="lazy" />
             </div>
           </div>
         </article>
       </div>
     </section>
 
+    <!-- Section 2: Bonus by Level -->
     <section aria-labelledby="bonus-title">
       <h2 id="bonus-title" class="section-title">各職等對應獎金金額</h2>
       <p class="section-intro">依被推薦人錄取職等，對應不同獎金金額，鼓勵同仁主動網羅合適人才。</p>
 
       <div class="bar-chart">
-        <!-- Desktop -->
+        <!-- Desktop 垂直長條圖 -->
         <div class="bonus-chart-desktop" aria-hidden="true">
           <div class="bonus-bars">
             <div class="bar-col">
               <div class="bar-track-vertical"><div class="bar-fill-vertical" style="height: 20%;"></div></div>
-              <div class="bar-meta">
-                <div class="bar-level">2 職等</div>
-                <div class="bar-amount">新台幣 10,000 元整</div>
-              </div>
+              <div class="bar-meta"><div class="bar-level">2 職等</div><div class="bar-amount">新台幣 10,000 元整</div></div>
             </div>
             <div class="bar-col">
               <div class="bar-track-vertical"><div class="bar-fill-vertical" style="height: 35%;"></div></div>
-              <div class="bar-meta">
-                <div class="bar-level">3 職等</div>
-                <div class="bar-amount">新台幣 35,000 元整</div>
-              </div>
+              <div class="bar-meta"><div class="bar-level">3 職等</div><div class="bar-amount">新台幣 35,000 元整</div></div>
             </div>
             <div class="bar-col">
               <div class="bar-track-vertical"><div class="bar-fill-vertical" style="height: 50%;"></div></div>
-              <div class="bar-meta">
-                <div class="bar-level">4 職等</div>
-                <div class="bar-amount">新台幣 60,000 元整</div>
-              </div>
+              <div class="bar-meta"><div class="bar-level">4 職等</div><div class="bar-amount">新台幣 60,000 元整</div></div>
             </div>
             <div class="bar-col">
               <div class="bar-track-vertical"><div class="bar-fill-vertical" style="height: 75%;"></div></div>
-              <div class="bar-meta">
-                <div class="bar-level">5 職等</div>
-                <div class="bar-amount">新台幣 100,000 元整</div>
-              </div>
+              <div class="bar-meta"><div class="bar-level">5 職等</div><div class="bar-amount">新台幣 100,000 元整</div></div>
             </div>
             <div class="bar-col">
               <div class="bar-track-vertical"><div class="bar-fill-vertical" style="height: 100%;"></div></div>
-              <div class="bar-meta">
-                <div class="bar-level">6 職等</div>
-                <div class="bar-amount">新台幣 150,000 元整</div>
-              </div>
+              <div class="bar-meta"><div class="bar-level">6 職等</div><div class="bar-amount">新台幣 150,000 元整</div></div>
             </div>
           </div>
         </div>
 
-        <!-- Mobile -->
+        <!-- Mobile 水平長條圖 -->
         <div class="bonus-chart-mobile">
-          <div class="bar-row">
-            <div class="bar-row-label">2 職等</div>
-            <div class="bar-row-track">
-              <div class="bar-row-fill" style="width: var(--lv2);">
-                <span class="bar-row-amount">新台幣 10,000 元整</span>
-              </div>
-            </div>
-          </div>
-
-          <div class="bar-row">
-            <div class="bar-row-label">3 職等</div>
-            <div class="bar-row-track">
-              <div class="bar-row-fill" style="width: var(--lv3);">
-                <span class="bar-row-amount">新台幣 35,000 元整</span>
-              </div>
-            </div>
-          </div>
-
-          <div class="bar-row">
-            <div class="bar-row-label">4 職等</div>
-            <div class="bar-row-track">
-              <div class="bar-row-fill" style="width: var(--lv4);">
-                <span class="bar-row-amount">新台幣 60,000 元整</span>
-              </div>
-            </div>
-          </div>
-
-          <div class="bar-row">
-            <div class="bar-row-label">5 職等</div>
-            <div class="bar-row-track">
-              <div class="bar-row-fill" style="width: var(--lv5);">
-                <span class="bar-row-amount">新台幣 100,000 元整</span>
-              </div>
-            </div>
-          </div>
-
-          <div class="bar-row">
-            <div class="bar-row-label">6 職等</div>
-            <div class="bar-row-track">
-              <div class="bar-row-fill" style="width: var(--lv6);">
-                <span class="bar-row-amount">新台幣 150,000 元整</span>
-              </div>
-            </div>
-          </div>
+          <div class="bar-row"><div class="bar-row-label">2 職等</div><div class="bar-row-track"><div class="bar-row-fill" style="width: var(--lv2);"><span class="bar-row-amount">新台幣 10,000 元整</span></div></div></div>
+          <div class="bar-row"><div class="bar-row-label">3 職等</div><div class="bar-row-track"><div class="bar-row-fill" style="width: var(--lv3);"><span class="bar-row-amount">新台幣 35,000 元整</span></div></div></div>
+          <div class="bar-row"><div class="bar-row-label">4 職等</div><div class="bar-row-track"><div class="bar-row-fill" style="width: var(--lv4);"><span class="bar-row-amount">新台幣 60,000 元整</span></div></div></div>
+          <div class="bar-row"><div class="bar-row-label">5 職等</div><div class="bar-row-track"><div class="bar-row-fill" style="width: var(--lv5);"><span class="bar-row-amount">新台幣 100,000 元整</span></div></div></div>
+          <div class="bar-row"><div class="bar-row-label">6 職等</div><div class="bar-row-track"><div class="bar-row-fill" style="width: var(--lv6);"><span class="bar-row-amount">新台幣 150,000 元整</span></div></div></div>
         </div>
       </div>
     </section>
 
+    <!-- Section 3: Application Process -->
     <section aria-labelledby="process-title">
       <h2 id="process-title" class="section-title">推薦獎金申請流程</h2>
       <p class="section-intro">請依下列步驟完成推薦，方便公司進入招募流程並進行後續獎金核發。</p>
+
       <ol class="process-list">
         <li class="process-item">
-          <span class="process-step">1</span>
-          <div class="process-text">介紹人至「<a href="https://forms.gle/7v8uJCHP9s9EeZw2A" target="_blank" rel="noopener noreferrer">推薦人才申請單</a>」填寫完整資料。</div>
+          <div class="process-head">
+            <span class="process-step">1</span>
+            <div class="process-body">
+              <div class="process-title">填寫推薦資料</div>
+              <div class="process-desc">介紹人至「<a href="https://forms.gle/7v8uJCHP9s9EeZw2A" target="_blank" rel="noopener noreferrer">推薦人才申請單</a>」填寫完整資料。</div>
+            </div>
+          </div>
         </li>
         <li class="process-item">
-          <span class="process-step">2</span>
-          <div class="process-text">被推薦人進入招募流程，流程依照該職位之正常招募流程進行。</div>
+          <div class="process-head">
+            <span class="process-step">2</span>
+            <div class="process-body">
+              <div class="process-title">進入招募流程</div>
+              <div class="process-desc">被推薦人進入招募流程，流程依照該職位之正常招募流程進行。</div>
+            </div>
+          </div>
         </li>
         <li class="process-item">
-          <span class="process-step">3</span>
-          <div class="process-text">被推薦人成功入職且通過試用期後，由人力資源部申請獎金發放。</div>
+          <div class="process-head">
+            <span class="process-step">3</span>
+            <div class="process-body">
+              <div class="process-title">通過試用期並核發獎金</div>
+              <div class="process-desc">被推薦人成功入職且通過試用期後，由人力資源部申請獎金發放。</div>
+            </div>
+          </div>
         </li>
       </ol>
     </section>
 
+    <!-- Section 4: Other Notes -->
     <section aria-labelledby="other-title">
       <h2 id="other-title" class="section-title">其他事項與權利保留</h2>
       <div class="small-print">
@@ -678,10 +834,11 @@
     </section>
   </main>
 
+  <!-- On top button -->
   <button class="on-top" aria-label="Back to top" title="Back to top">↑</button>
 
   <script>
-    // Auto dark mode: follow OS setting
+    // Auto dark mode: follow OS setting (no manual toggle)
     (function(){
       const mq = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)');
       if(!mq) return;
@@ -691,33 +848,144 @@
       else if (mq.addListener) mq.addListener(apply);
     })();
 
-    // Minimal runtime checks (acts like lightweight "tests")
-    console.assert(!!document.querySelector('.on-top'), '[on-top] button missing');
-
-    // Scroll animation (IntersectionObserver)
+    // Scroll animations + chart fill + on-top
     (function () {
+      const runTestsIfRequested = () => {
+        // Run with: index.html?test=1
+        try {
+          const params = new URLSearchParams(location.search);
+          if (params.get('test') !== '1') return;
+
+          console.assert(!!document.querySelector('.hero'), 'Test: hero should exist');
+          console.assert(!!document.querySelector('.on-top'), 'Test: on-top button should exist');
+          console.assert(!!document.querySelector('.bar-chart'), 'Test: bar-chart should exist');
+
+          console.assert(document.querySelectorAll('.bonus-chart-mobile .bar-row').length === 5, 'Test: mobile bars should be 5');
+          console.assert(document.querySelectorAll('.bonus-chart-desktop .bar-col').length === 5, 'Test: desktop bars should be 5');
+
+          console.assert(!!document.querySelector('.card-referral .card-icon img'), 'Test: referral icon should exist');
+          console.assert(!!document.querySelector('.card-reference .card-icon img'), 'Test: reference icon should exist');
+          console.assert(!!document.querySelector('.card-receive .card-icon img'), 'Test: receive icon should exist');
+        } catch (_) {}
+      };
+
       const prefersReduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-      /* On-top button logic (always enabled, even if prefersReduced) */
+      // On-top button (desktop + mobile)
       const btn = document.querySelector('.on-top');
       if (btn) {
-        const update = () => {
-          const showAt = window.innerHeight * 0.9;
-          btn.classList.toggle('visible', window.scrollY > showAt);
+        // When true, we force-hide the button until user scrolls down again.
+        // This guarantees: click -> hide immediately; stay hidden at top; only re-appear after scrolling down enough.
+        let lockHidden = false;
+        // Mobile hysteresis: once shown, keep visible until near top (prevents bottom "bounce" from hiding it). 
+        let mobileStickyVisible = false;
+
+        const topHideThreshold = 120; // px (mobile Safari may not land exactly on 0)
+
+        // Desktop: show after scrolling down a bit.
+        // Mobile: only show when reaching the "其他事項與權利保留" section (avoid appearing too early).
+        const mqMobile = window.matchMedia('(max-width: 767px)');
+        let mobileShowFrom = null;
+
+        const computeMobileShowFrom = () => {
+          if (!mqMobile.matches) { mobileShowFrom = null; return; }
+          const otherSection = document.querySelector('section[aria-labelledby="other-title"]') || document.getElementById('other-title')?.closest('section');
+          if (!otherSection) { mobileShowFrom = window.innerHeight * 1.2; return; }
+          // Show when user has scrolled to (or past) the start of the small-print section.
+          mobileShowFrom = otherSection.offsetTop - 40;
         };
+
+        const showAt = () => {
+          if (mqMobile.matches) {
+            if (mobileShowFrom == null) computeMobileShowFrom();
+            return mobileShowFrom ?? (window.innerHeight * 1.2);
+          }
+          return window.innerHeight * 0.9;
+        };
+
+        const hideBtn = () => btn.classList.remove('visible');
+        const maybeShowBtn = () => {
+          const threshold = showAt();
+
+          if (mqMobile.matches) {
+            // On mobile, show only after reaching the target section once.
+            // After it becomes visible, keep it visible until user returns near top.
+            if (!mobileStickyVisible) {
+              if (window.scrollY >= threshold) {
+                mobileStickyVisible = true;
+                btn.classList.add('visible');
+              } else {
+                btn.classList.remove('visible');
+              }
+            } else {
+              btn.classList.add('visible');
+            }
+            return;
+          }
+
+          // Desktop: normal toggle by scroll distance
+          if (window.scrollY >= threshold) btn.classList.add('visible');
+          else btn.classList.remove('visible');
+        };
+
+        const update = () => {
+          // Always hide near top.
+          if (window.scrollY <= topHideThreshold) {
+            // reset sticky state when back near top
+            mobileStickyVisible = false;
+            hideBtn();
+            return;
+          }
+
+          // If locked, keep hidden until user scrolls down past showAt.
+          if (lockHidden) {
+            hideBtn();
+            if (window.scrollY >= showAt()) {
+              // User has scrolled down again -> unlock; next scroll tick can show.
+              lockHidden = false;
+              maybeShowBtn();
+            }
+            return;
+          }
+
+          maybeShowBtn();
+        };
+
+        const handleResize = () => {
+          computeMobileShowFrom();
+          update();
+        };
+
         window.addEventListener('scroll', update, { passive: true });
-        window.addEventListener('resize', update);
+        window.addEventListener('resize', handleResize);
+        if (mqMobile.addEventListener) mqMobile.addEventListener('change', handleResize);
+        else if (mqMobile.addListener) mqMobile.addListener(handleResize);
+
+        computeMobileShowFrom();
         update();
 
         btn.addEventListener('click', () => {
+          // Requirement: click -> immediately hide.
+          lockHidden = true;
+          mobileStickyVisible = false;
+          hideBtn();
+
+          // Smooth scroll to top.
           window.scrollTo({ top: 0, behavior: 'smooth' });
-          // 點擊後先隱藏；回到頂部後由 update() 決定是否顯示
-          btn.classList.remove('visible');
+
+          // If smooth scrolling is unsupported / interrupted, we still enforce hiding.
+          // When user later scrolls down past showAt, update() will unlock.
+          // Also run an extra update shortly after click to cover iOS address-bar bounce.
+          setTimeout(update, 250);
+          setTimeout(update, 600);
         });
       }
 
-      // If user prefers reduced motion: skip reveal/chart, keep on-top
-      if (prefersReduced) return;
+      // Respect reduced motion: skip reveal/chart animations: skip reveal/chart animations
+      if (prefersReduced) {
+        runTestsIfRequested();
+        return;
+      }
 
       const addReveal = (el, extra) => {
         if (!el) return;
@@ -727,8 +995,13 @@
 
       const hero = document.querySelector('.hero');
       if (hero) {
-        addReveal(hero.querySelector('.hero-text'), 'from-left');
-        addReveal(hero.querySelector('.hero-visual'), 'from-right');
+        const ht = hero.querySelector('.hero-text');
+        const hv = hero.querySelector('.hero-visual');
+        addReveal(ht, 'from-left');
+        addReveal(hv, 'from-right');
+        // Ensure hero visuals are visible immediately on first viewport (especially mobile)
+        if (ht) ht.classList.add('in-view');
+        if (hv) hv.classList.add('in-view');
       }
 
       document.querySelectorAll('section').forEach((sec) => {
@@ -750,10 +1023,14 @@
       });
 
       const targets = Array.from(document.querySelectorAll('.reveal'));
-
       const io = new IntersectionObserver(
         (entries) => {
           entries.forEach((entry) => {
+            // Keep hero content always visible (avoid mobile Safari layout/viewport glitches)
+            if (entry.target.closest('.hero')) {
+              entry.target.classList.add('in-view');
+              return;
+            }
             entry.target.classList.toggle('in-view', entry.isIntersecting);
           });
         },
@@ -761,6 +1038,7 @@
       );
       targets.forEach((el) => io.observe(el));
 
+      // Bonus chart：進入填滿、離開回到空
       const chartEl = document.querySelector('.bar-chart');
       if (chartEl) {
         const chartIO = new IntersectionObserver(
@@ -773,6 +1051,8 @@
         );
         chartIO.observe(chartEl);
       }
+
+      runTestsIfRequested();
     })();
   </script>
 </body>
