@@ -861,6 +861,32 @@ body.theme-dark .on-top{
           console.assert(!!document.querySelector('.on-top'), 'Test: on-top button should exist');
           console.assert(!!document.querySelector('.bar-chart'), 'Test: bar-chart should exist');
 
+          // On-top behavior (logic-level smoke test)
+          // Expect: after click, it should stay hidden during upward scroll, and only re-enable on downward scroll beyond threshold.
+          (function(){
+            const mqMobile = window.matchMedia('(max-width: 767px)');
+            const otherSection = document.querySelector('section[aria-labelledby="other-title"]');
+            const mobileThresh = otherSection ? Math.max(0, otherSection.offsetTop - 80) : (window.innerHeight * 1.2);
+            const thresh = mqMobile.matches ? mobileThresh : (window.innerHeight * 0.9);
+
+            // Simulate state machine
+            let hidden = true;
+            let last = 1000;
+            const shouldUnhide = (y) => {
+              const isDown = y > last;
+              last = y;
+              if (hidden && isDown && y >= thresh) hidden = false;
+              return hidden;
+            };
+
+            // going up shouldn't unhide
+            console.assert(shouldUnhide(800) === true, 'Test: on-top should remain hidden while scrolling up');
+            console.assert(shouldUnhide(200) === true, 'Test: on-top should remain hidden near top');
+            // going down past threshold should unhide
+            last = 0; hidden = true;
+            console.assert(shouldUnhide(thresh + 10) === false, 'Test: on-top should re-enable when scrolling down past threshold');
+          })();
+
           console.assert(document.querySelectorAll('.bonus-chart-mobile .bar-row').length === 5, 'Test: mobile bars should be 5');
           console.assert(document.querySelectorAll('.bonus-chart-desktop .bar-col').length === 5, 'Test: desktop bars should be 5');
 
@@ -910,8 +936,12 @@ body.theme-dark .on-top{
         const hideBtn = () => btn.classList.remove('visible');
         const showBtn = () => btn.classList.add('visible');
 
+        let lastY = window.scrollY || 0;
+
         const updateBtn = () => {
           const y = window.scrollY || window.pageYOffset || 0;
+          const isDown = y > lastY;
+          lastY = y;
 
           // Always hide near top
           if (y <= topHideThreshold) {
@@ -919,16 +949,19 @@ body.theme-dark .on-top{
             return;
           }
 
-          // If user has clicked "on top", keep hidden until they scroll down to threshold again
+          // If user has clicked "on top", keep hidden until they scroll DOWN to the target threshold again
+          // (Prevent clearing during the smooth scroll up-to-top, which briefly starts at a large y.)
           if (hiddenUntilThreshold) {
             hideBtn();
-            if (y >= threshold()) hiddenUntilThreshold = false;
+            if (isDown && y >= threshold()) hiddenUntilThreshold = false;
             return;
           }
 
           // Show once reaching threshold, and STAY visible afterwards (do not hide at bottom)
           if (y >= threshold()) {
             showBtn();
+          } else {
+            hideBtn();
           }
         };
 
@@ -953,12 +986,16 @@ body.theme-dark .on-top{
           // - only re-appears when user scrolls down to "其他事項與權利保留" (mobile) / after 1 screen (desktop)
           hiddenUntilThreshold = true;
           hideBtn();
+
+          // Reset direction tracker so the smooth scroll up doesn't look like a "down" scroll.
+          lastY = window.scrollY || window.pageYOffset || 0;
+
           window.scrollTo({ top: 0, behavior: 'smooth' });
 
           // Extra updates for iOS address-bar / momentum scroll quirks
-          setTimeout(updateBtn, 120);
-          setTimeout(updateBtn, 420);
-          setTimeout(updateBtn, 820);
+          setTimeout(() => { lastY = window.scrollY || window.pageYOffset || 0; updateBtn(); }, 120);
+          setTimeout(() => { lastY = window.scrollY || window.pageYOffset || 0; updateBtn(); }, 420);
+          setTimeout(() => { lastY = window.scrollY || window.pageYOffset || 0; updateBtn(); }, 820);
         });
       }
 
