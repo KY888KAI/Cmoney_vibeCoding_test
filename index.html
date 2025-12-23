@@ -877,6 +877,9 @@ body.theme-dark .on-top{
         // When true, we force-hide the button until user scrolls down again.
         // This guarantees: click -> hide immediately; stay hidden at top; only re-appear after scrolling down enough.
         let lockHidden = false;
+        // After clicking, we only unlock AFTER we have returned near top once,
+        // then the user scrolls down to the target section again.
+        let seenTopAfterClick = false;
         // Mobile hysteresis: once shown, keep visible until near top (prevents bottom "bounce" from hiding it). 
         let mobileStickyVisible = false;
 
@@ -943,8 +946,19 @@ body.theme-dark .on-top{
           // If locked, keep hidden until user scrolls down past showAt.
           if (lockHidden) {
             hideBtn();
+
+            // IMPORTANT: during the smooth scroll back to top, scrollY may still be >= showAt().
+            // We must NOT unlock while scrolling up, otherwise the button can re-appear.
+            if (!seenTopAfterClick) {
+              if (window.scrollY <= topHideThreshold) {
+                seenTopAfterClick = true;
+              }
+              return;
+            }
+
+            // After we have reached (near) top once, only then allow re-appearing
+            // when user scrolls down to the target section again.
             if (window.scrollY >= showAt()) {
-              // User has scrolled down again -> unlock; next scroll tick can show.
               lockHidden = false;
               maybeShowBtn();
             }
@@ -968,8 +982,9 @@ body.theme-dark .on-top{
         update();
 
         btn.addEventListener('click', () => {
-          // Requirement: click -> immediately hide.
+          // Requirement: click -> immediately hide, and stay hidden until user scrolls down to the target section again.
           lockHidden = true;
+          seenTopAfterClick = false;
           mobileStickyVisible = false;
           hideBtn();
 
